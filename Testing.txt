@@ -1,0 +1,120 @@
+Test Document
+
+Main Tests
+Two for Memory
+1.) Allocating
+2.) Releasing
+Two for process management
+3.) Context switching
+4.) PCB management
+
+1.) Memory Allocation unit tests
+a.) Executive Summary
+The goal of this test was to prove that the memory manager will allocate memory correctly. This is important because the memory manager is the foundation of the operating system
+and if its performance cannot be guaranteed it is difficult to debug the rest of the system.
+
+b.)Test Methodology
+To perform this test we came up with a set of allocations that would test boundary conditions and different use cases for the memory manager. The primary tool in debugging was the 
+output of kMemMapper, a function we wrote that iterates through the nodes and prints out the properties. This tool was limited by the screen space of the emulator so we also
+had checks on the return value from kmalloc to automatically test values.
+
+c.) Output
+i.
+ kmeminit();
+ kMemMapAll("Memory map after Init \n"); 
+ void *mem1 = kmalloc( 128 );
+ void *mem2 = kmalloc( 128 );
+ void *mem3 = kmalloc( 128 );
+ kMemMapAll("Memory map after malloc \n");
+ii.
+ kmeminit();
+ kMemMapAll("Memory map after Init \n"); 
+ void *mem1 = kmalloc( 256 );
+ void *mem2 = kmalloc( 512 );
+ void *mem3 = kmalloc( 1024 );
+ kMemMapAll("Memory map after malloc \n"); 
+ ii.
+ kmeminit();
+ kMemMapAll("Memory map after Init \n"); 
+ void *mem2 = kmalloc( 4096 );
+ void *mem3 = kmalloc( 8192 );
+ void *mem1 = kmalloc( 16384 );
+ void *mem2 = kmalloc( 65536 );
+ void *mem3 = kmalloc( 131072 );
+ kMemMapAll("Memory map after malloc \n");
+  
+
+2.)
+a.) Executive Summary
+The goal of this test was to prove that the memory manager will deallocate memory correctly. This is important because the memory manager is the foundation of the operating system
+and if its performance cannot be guaranteed it is difficult to debug the rest of the system.
+
+b.)Test Methodology
+To test the kfree method, we reused a number of a tests from kmalloc and verified that after deallocation the memory returned to its prior state. Due to the nearly infinite states that 
+the memory can get into, we focused on cases that we thought would be most likely and would excercise all code paths.
+
+c.) Output
+i.
+ kmeminit();
+ kMemMapAll("Memory map after Init \n"); 
+ void *mem1 = kmalloc( 128 );
+ void *mem2 = kmalloc( 128 );
+ void *mem3 = kmalloc( 128 ); 
+  kfree(mem1);  
+  kfree(mem2);
+  kfree(mem3);
+  kMemMapAll("Memory map after free \n");
+ii.
+ kmeminit();
+ kMemMapAll("Memory map after Init \n"); 
+ void *mem1 = kmalloc( 128 );
+ void *mem2 = kmalloc( 128 );
+ void *mem3 = kmalloc( 128 );
+  kfree(mem3);  
+  kfree(mem2);
+  kfree(mem1);
+  kMemMapAll("Memory map after free \n");
+iii.  
+ kmeminit();
+ kMemMapAll("Memory map after Init \n"); 
+ void *mem1 = kmalloc( 128 );
+ void *mem2 = kmalloc( 128 );
+ void *mem3 = kmalloc( 128 );
+  kfree(mem2);  
+  kfree(mem1);
+  kfree(mem3);
+  kMemMapAll("Memory map after free \n");
+iv.  
+ void *mem1 = kmalloc( 256 );
+ void *mem2 = kmalloc( 128 );
+ void *mem3 = kmalloc( 512 );
+ kMemMapAll("Memory map after malloc \n");  
+ kfree(mem1);  
+ kfree(mem2);
+ kfree(mem3);
+ kMemMapAll("Memory map after free \n");
+v.  
+ void *mem1 = kmalloc( 256 );
+ void *mem2 = kmalloc( 128 );
+ void *mem3 = kmalloc( 512 );
+
+ 
+3.) Context switching
+a.) Executive Summary
+The goal of this test was to ensure that our context switching function properly changed between the context of two seperate threads.
+This was a complex function that is key to the proper functioning of the system.
+b.)Test Methodology
+To test this we used a modified version of the create() function that had known values in its registers. The process was a simple yield.
+After the context was switched back and forth we dumped the registers to ensure that nothing was clobbered and code was executed from the right place.
+c.) Output
+The registers were preserved after 3 yields of each process.
+
+4.) PCB management
+a.) Executive Summary
+We developed this test in order to demonstrate the functionality of our PCB array. We decided that this was an important test because the
+create function and dispatcher were parts that we worked on seperately and we wanted to ensure that we had correctly incorporated our work.
+b.)Test Methodology
+To test the PCB array and dispatch queues, we added a number of debug statements in the dispatcher function. Then using the yield and stop 
+calls we were able to make sure that the PCB array was being handled correctly.
+c.) Output
+
